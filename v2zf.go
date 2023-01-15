@@ -186,7 +186,9 @@ func hadleJson(info tools.ForWard) {
 func getAllRealUrls() {
 	db := tools.GetDB()
 	var v2ServerV2Rays []tools.V2ServerV2Ray
-	db.Where("parent_id is null").Find(&v2ServerV2Rays)
+	db.Where("parent_id is null\n "+
+		" and id not in\n    "+
+		"  (select parent_id from v2_server_v2ray where parent_id is not null and host = ?)", ZhongZhuanUrl).Find(&v2ServerV2Rays)
 	var builder strings.Builder
 	for _, serverV2Ray := range v2ServerV2Rays {
 		A := serverV2Ray.Host
@@ -197,7 +199,8 @@ func getAllRealUrls() {
 		builder.WriteString("\n")
 	}
 	var v2ServerSs []tools.V2ServerShadowsocks
-	db.Where("parent_id is null and port!=0").Find(&v2ServerSs)
+	db.Where("parent_id is null and port !=0\n  and id not in\n  "+
+		"    (select parent_id from v2_server_shadowsocks where parent_id is not null and host = ?)", ZhongZhuanUrl).Find(&v2ServerSs)
 	for _, ss := range v2ServerSs {
 		A := ss.Host
 		B := ss.Port
